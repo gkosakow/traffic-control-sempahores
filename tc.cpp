@@ -1,9 +1,12 @@
+#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
+
+using namespace std;
 
 sem_t semaphore;
 
@@ -27,18 +30,18 @@ int main(void) {
     mythread = (pthread_t *)malloc(sizeof(*mythread));
     
     // start the thread
-    printf("Starting thread, semaphore is unlocked.\n");
+    cout << "Starting thread, semaphore is unlocked." << endl;
     pthread_create(mythread, NULL, threadfunc, NULL);
     
     getchar();
     
     sem_wait(&semaphore);
-    printf("Semaphore locked.\n");
+    cout << "Semaphore locked." << endl;
     
     // do stuff with whatever is shared between threads
     getchar();
     
-    printf("Semaphore unlocked.\n");
+    cout << "Semaphore unlocked." << endl;
     sem_post(&semaphore);
     
     getchar();
