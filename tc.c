@@ -26,9 +26,6 @@ void spin (unsigned int secs) {
 void *checkPath(void *d){
     directions *carPtr = (directions *)d;
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
-
     if (carPtr->dir_original == 'N'){
         if(carPtr->dir_target == 'N'){
             sem_wait(&NN);
@@ -65,8 +62,11 @@ void *checkPath(void *d){
             sem_wait(&WS);
         }
     }
-    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
+    // now = time(NULL);
+    // printf("Time: %lds\t", (now - start));
+    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    // printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
+
     return (void *) NULL;
 }
 
@@ -154,11 +154,10 @@ void *blockPath(void *d){
         }
     }
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
-
-    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("\t\t\t\t\tBlocked path\n");    //DEBUGGER
+    // now = time(NULL);
+    // printf("Time: %lds\t", (now - start));
+    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    // printf("\t\t\t\t\tBlocked path\n");    //DEBUGGER
 
     return (void *) NULL;
 }
@@ -247,20 +246,16 @@ void *unblockPath(void *d){
         }
     }
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
-
-    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("\t\t\t\t\tUnblocked path\n");    //DEBUGGER
+    // now = time(NULL);
+    // printf("Time: %lds\t", (now - start));
+    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    // printf("\t\t\t\t\tUnblocked path\n");    //DEBUGGER
     
     return (void *) NULL;
 }
 
 void *unblockCurrentPath(void *d){
     directions *carPtr = (directions *)d;
-
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
 
     if (carPtr->dir_original == 'N'){
         if(carPtr->dir_target == 'N'){
@@ -298,8 +293,12 @@ void *unblockCurrentPath(void *d){
             sem_post(&WS);
         }
     }
-    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
+
+    // now = time(NULL);
+    // printf("Time: %lds\t", (now - start));
+    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    // printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
+
     return (void *) NULL;
 }
 
@@ -308,7 +307,6 @@ void ArriveIntersection(void* d){
 
     now = time(NULL);
     printf("Time: %lds\t", (now - start));
-
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
     spin(2);
@@ -321,9 +319,7 @@ void CrossIntersection(void* d){
 
     now = time(NULL);
     printf("Time: %lds\t", (now - start));
-    
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    
     printf(" crossing\n");
     unblockCurrentPath(d);
     blockPath(d);
@@ -335,9 +331,7 @@ void ExitIntersection(void* d){
 
     now = time(NULL);
     printf("Time: %lds\t", (now - start));
-
     printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-
     printf("  exiting\n");
     unblockPath(d);
 }
@@ -349,11 +343,10 @@ void * Car(void* d) {
     CrossIntersection(d);
     ExitIntersection(d);
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
-
-    printf("Car %d (%c , %c)\t\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("gone \n");
+    // now = time(NULL);
+    // printf("Time: %lds\t", (now - start));
+    // printf("Car %d (%c , %c)\t\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    // printf("gone \n");
     return NULL;
 }
 
@@ -391,9 +384,9 @@ int main(void) {
     start = time(NULL); // starting the timer. (NULL is initial time in int seconds)
     
     pthread_create(&thread1, NULL, Car, car1Ptr);
-    spin(.5);
+    spin(1);
     pthread_create(&thread2, NULL, Car, car2Ptr);
-    spin(.5);
+    spin(1);
     pthread_create(&thread3, NULL, Car, car3Ptr);
 
     // printf("after pthread_create\n");
@@ -403,5 +396,4 @@ int main(void) {
     
     printf("Done with main thread.\n");
     return 0;
-    
 }
