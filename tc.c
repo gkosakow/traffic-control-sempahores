@@ -17,8 +17,8 @@ char dir_target;
 
 void *blockPath(void *d){
     directions *carPtr = (directions *)d;
-    printf("Car %d, (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    printf("Blocking path\n");    //DEBUGGER
+    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("\t\t\t\t\tBlocking path\n");    //DEBUGGER
 
     if (carPtr->dir_original == 'N'){
         if(carPtr->dir_target == 'N'){
@@ -118,7 +118,7 @@ void *blockPath(void *d){
 
 void *unblockPath(void *d){
     directions *carPtr = (directions *)d;
-    printf("Car %d, (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("Unblocking path\n");    //DEBUGGER
 
     if (carPtr->dir_original == 'N'){
@@ -219,37 +219,36 @@ void *unblockPath(void *d){
 
 void ArriveIntersection(void* d){
     directions *carPtr = (directions *)d;
-    printf("Car %d, (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
-    sleep(2);
+    //sleep(2);
     // sem_wait(&headLock);
     blockPath(d);
 }
 
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
-    printf("Car %d, (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
-    sem_post(&headLock);
-    sleep(4); // x= left, right, straight
+    //sem_post(&headLock);
+    //sleep(4); // x= left, right, straight
 }
 
 void ExitIntersection(void* d){
     directions *carPtr = (directions *)d;
-    printf("Car %d, (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("  exiting\n");
     unblockPath(d);
 }
 
 void * Car(void* d) {
     directions *carPtr = (directions *)d;
-    //sem_wait(&headLock);            // car acquires headlock when 
+    sem_wait(&headLock);            // car acquires headlock when 
     ArriveIntersection(d);
-    sem_wait(&headLock);
+    sem_post(&headLock);
     CrossIntersection(d);
-    //sem_post(&headLock);
     ExitIntersection(d);
-    printf("Car %d, (%c , %c)\t\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (%c , %c)\t\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("gone \n");
     return NULL;
 }
@@ -279,12 +278,16 @@ int main(void) {
     car2Ptr->dir_target = 'S';
     //printf("%d\n", car2Ptr->carID);
 
-    pthread_create(&thread1, NULL, Car, car1Ptr);
     pthread_create(&thread2, NULL, Car, car2Ptr);
+    pthread_create(&thread1, NULL, Car, car1Ptr);
 
     // printf("after pthread_create\n");
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     printf("\n");
     return 0;
-}
+    
+    // threads need a barrier until they all arrive
+    // past that, they need to rely on a timer to be called.
+    // switch statement?
+    // need thread syncronization at barrier
