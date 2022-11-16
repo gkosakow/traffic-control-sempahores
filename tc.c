@@ -23,99 +23,134 @@ void spin (unsigned int secs) {
     while (time(0) < retTime);               // Loop until it arrives.
 }
 
-void *blockPath(void *d){
+void *checkPath(void *d){
     directions *carPtr = (directions *)d;
+
+    now = time(NULL);
+    printf("Time: %lds\t", (now - start));
 
     if (carPtr->dir_original == 'N'){
         if(carPtr->dir_target == 'N'){
             sem_wait(&NN);
-            sem_wait(&WN);
-            sem_wait(&WW);
-            sem_wait(&WS);
-            sem_wait(&SE);
-            sem_wait(&EE);
-            sem_wait(&EN);
         } else if(carPtr->dir_target == 'E'){
             sem_wait(&NE);
-            sem_wait(&SE);
-            sem_wait(&EE);
         } else if(carPtr->dir_target == 'W'){
             sem_wait(&NW);
-            sem_wait(&WW);
-            sem_wait(&WS);
-            sem_wait(&SW);
-            sem_wait(&SS);
-            sem_wait(&EE);
-            sem_wait(&EN);
         }
     }
     if (carPtr->dir_original == 'E'){
         if(carPtr->dir_target == 'E'){
             sem_wait(&EE);
-            sem_wait(&NE);
-            sem_wait(&NN);
-            sem_wait(&NW);
-            sem_wait(&WS);
-            sem_wait(&SS);
-            sem_wait(&SE);
         } else if(carPtr->dir_target == 'S'){
             sem_wait(&ES);
-            sem_wait(&WS);
-            sem_wait(&SS);
         } else if(carPtr->dir_target == 'N'){
             sem_wait(&EN);
-            sem_wait(&NN);
-            sem_wait(&NW);
-            sem_wait(&WN);
-            sem_wait(&WW);
-            sem_wait(&SS);
-            sem_wait(&SE);
         }
     }
     if (carPtr->dir_original == 'S'){
         if(carPtr->dir_target == 'S'){
             sem_wait(&SS);
-            sem_wait(&ES);
-            sem_wait(&EE);
-            sem_wait(&EN);
-            sem_wait(&NW);
-            sem_wait(&WW);
-            sem_wait(&WS);
         } else if(carPtr->dir_target == 'W'){
             sem_wait(&SW);
-            sem_wait(&NW);
-            sem_wait(&WW);
         } else if(carPtr->dir_target == 'E'){
             sem_wait(&SE);
-            sem_wait(&EE);
-            sem_wait(&EN);
-            sem_wait(&NE);
-            sem_wait(&NN);
-            sem_wait(&WW);
-            sem_wait(&WS);
         }
     }
     if (carPtr->dir_original == 'W'){
         if(carPtr->dir_target == 'W'){
             sem_wait(&WW);
-            sem_wait(&SW);
-            sem_wait(&SS);
-            sem_wait(&SE);
-            sem_wait(&EN);
-            sem_wait(&NN);
-            sem_wait(&NW);
         } else if(carPtr->dir_target == 'N'){
             sem_wait(&WN);
-            sem_wait(&EN);
-            sem_wait(&NN);
         } else if(carPtr->dir_target == 'S'){
             sem_wait(&WS);
-            sem_wait(&SS);
-            sem_wait(&SE);
-            sem_wait(&ES);
-            sem_wait(&EE);
-            sem_wait(&NN);
-            sem_wait(&NW);
+        }
+    }
+    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
+    return (void *) NULL;
+}
+
+void *blockPath(void *d){
+    directions *carPtr = (directions *)d;
+
+    if (carPtr->dir_original == 'N'){
+        if(carPtr->dir_target == 'N'){
+            sem_trywait(&WN);
+            sem_trywait(&WW);
+            sem_trywait(&WS);
+            sem_trywait(&SE);
+            sem_trywait(&EE);
+            sem_trywait(&EN);
+        } else if(carPtr->dir_target == 'E'){
+            sem_trywait(&SE);
+            sem_trywait(&EE);
+        } else if(carPtr->dir_target == 'W'){
+            sem_trywait(&WW);
+            sem_trywait(&WS);
+            sem_trywait(&SW);
+            sem_trywait(&SS);
+            sem_trywait(&EE);
+            sem_trywait(&EN);
+        }
+    }
+    if (carPtr->dir_original == 'E'){
+        if(carPtr->dir_target == 'E'){
+            sem_trywait(&NE);
+            sem_trywait(&NN);
+            sem_trywait(&NW);
+            sem_trywait(&WS);
+            sem_trywait(&SS);
+            sem_trywait(&SE);
+        } else if(carPtr->dir_target == 'S'){
+            sem_trywait(&WS);
+            sem_trywait(&SS);
+        } else if(carPtr->dir_target == 'N'){
+            sem_trywait(&NN);
+            sem_trywait(&NW);
+            sem_trywait(&WN);
+            sem_trywait(&WW);
+            sem_trywait(&SS);
+            sem_trywait(&SE);
+        }
+    }
+    if (carPtr->dir_original == 'S'){
+        if(carPtr->dir_target == 'S'){
+            sem_trywait(&ES);
+            sem_trywait(&EE);
+            sem_trywait(&EN);
+            sem_trywait(&NW);
+            sem_trywait(&WW);
+            sem_trywait(&WS);
+        } else if(carPtr->dir_target == 'W'){
+            sem_trywait(&NW);
+            sem_trywait(&WW);
+        } else if(carPtr->dir_target == 'E'){
+            sem_trywait(&EE);
+            sem_trywait(&EN);
+            sem_trywait(&NE);
+            sem_trywait(&NN);
+            sem_trywait(&WW);
+            sem_trywait(&WS);
+        }
+    }
+    if (carPtr->dir_original == 'W'){
+        if(carPtr->dir_target == 'W'){
+            sem_trywait(&SW);
+            sem_trywait(&SS);
+            sem_trywait(&SE);
+            sem_trywait(&EN);
+            sem_trywait(&NN);
+            sem_trywait(&NW);
+        } else if(carPtr->dir_target == 'N'){
+            sem_trywait(&EN);
+            sem_trywait(&NN);
+        } else if(carPtr->dir_target == 'S'){
+            sem_trywait(&SS);
+            sem_trywait(&SE);
+            sem_trywait(&ES);
+            sem_trywait(&EE);
+            sem_trywait(&NN);
+            sem_trywait(&NW);
         }
     }
 
@@ -276,9 +311,9 @@ void ArriveIntersection(void* d){
 
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
-    sleep(2);
+    spin(2);
     sem_wait(&headLock);
-    blockPath(d);
+    checkPath(d);
 }
 
 void CrossIntersection(void* d){
@@ -291,7 +326,7 @@ void CrossIntersection(void* d){
     
     printf(" crossing\n");
     unblockCurrentPath(d);
-    sem_post(&headLock);
+    blockPath(d);
     spin(4); // x= left, right, straight
 }
 
@@ -302,14 +337,15 @@ void ExitIntersection(void* d){
     printf("Time: %lds\t", (now - start));
 
     printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+
     printf("  exiting\n");
     unblockPath(d);
 }
 
 void * Car(void* d) {
     directions *carPtr = (directions *)d;
-
     ArriveIntersection(d);
+    sem_post(&headLock);
     CrossIntersection(d);
     ExitIntersection(d);
 
@@ -355,9 +391,9 @@ int main(void) {
     start = time(NULL); // starting the timer. (NULL is initial time in int seconds)
     
     pthread_create(&thread1, NULL, Car, car1Ptr);
-    sleep(0.1);
+    spin(.5);
     pthread_create(&thread2, NULL, Car, car2Ptr);
-    sleep(0.1);
+    spin(.5);
     pthread_create(&thread3, NULL, Car, car3Ptr);
 
     // printf("after pthread_create\n");
