@@ -5,15 +5,17 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <time.h>
+#include <sys/time.h>
 
 sem_t headLock;                                             // arrival at intersection
 sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;        // northwest mid, northeast mid, southeast mid, southwest mid
 sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};
 time_t start, now;
+struct timeval begin, end;
 
 typedef struct _directions{
 int carID;
-int arrTime;
+double arrTime;
 char dir_original;
 char dir_target;
 } directions;
@@ -305,11 +307,15 @@ void *unblockCurrentPath(void *d){
 void ArriveIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
+    gettimeofday(&end, 0);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long microseconds = end.tv_usec - begin.tv_usec;
+    double elapsed = seconds + microseconds*1e-6;
+    printf("Time: %.2fs\t", elapsed);
+
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
-    spin(2);
+    sleep(2);
     sem_wait(&headLock);
     checkPath(d);
 }
@@ -317,20 +323,28 @@ void ArriveIntersection(void* d){
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
+    gettimeofday(&end, 0);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long microseconds = end.tv_usec - begin.tv_usec;
+    double elapsed = seconds + microseconds*1e-6;
+    printf("Time: %.2fs\t", elapsed);
+
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
     unblockCurrentPath(d);
     blockPath(d);
-    spin(4); // x= left, right, straight
+    sleep(4); // x= left, right, straight
 }
 
 void ExitIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    now = time(NULL);
-    printf("Time: %lds\t", (now - start));
+    gettimeofday(&end, 0);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long microseconds = end.tv_usec - begin.tv_usec;
+    double elapsed = seconds + microseconds*1e-6;
+    printf("Time: %.2fs\t", elapsed);
+
     printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("  exiting\n");
     unblockPath(d);
@@ -338,15 +352,13 @@ void ExitIntersection(void* d){
 
 void * Car(void* d) {
     directions *carPtr = (directions *)d;
+
+    sleep(1.1);
+
     ArriveIntersection(d);
     sem_post(&headLock);
     CrossIntersection(d);
     ExitIntersection(d);
-
-    // now = time(NULL);
-    // printf("Time: %lds\t", (now - start));
-    // printf("Car %d (%c , %c)\t\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    // printf("gone \n");
     return NULL;
 }
 
@@ -362,38 +374,90 @@ int main(void) {
     pthread_t thread1;
     pthread_t thread2;
     pthread_t thread3;
-
+    pthread_t thread4;
+    pthread_t thread5;
+    pthread_t thread6;
+    pthread_t thread7;
+    pthread_t thread8;
+ 
     directions *car1Ptr;
     car1Ptr = (directions *)malloc(sizeof(directions));
-    car1Ptr->carID = 1;
+    car1Ptr->carID = 0;
+    car1Ptr->arrTime = 1.1;
     car1Ptr->dir_original = 'N';
     car1Ptr->dir_target = 'N';
-
+ 
     directions *car2Ptr;
     car2Ptr = (directions *)malloc(sizeof(directions));
-    car2Ptr->carID = 2;
-    car2Ptr->dir_original = 'S';
-    car2Ptr->dir_target = 'S';
-
+    car2Ptr->carID = 1;
+    car2Ptr->arrTime = 2.0;
+    car2Ptr->dir_original = 'N';
+    car2Ptr->dir_target = 'N';
+ 
     directions *car3Ptr;
     car3Ptr = (directions *)malloc(sizeof(directions));
-    car3Ptr->carID = 3;
-    car3Ptr->dir_original = 'W';
+    car3Ptr->carID = 2;
+    car3Ptr->arrTime = 3.3;
+    car3Ptr->dir_original = 'N';
     car3Ptr->dir_target = 'W';
-
-    start = time(NULL); // starting the timer. (NULL is initial time in int seconds)
+ 
+    directions *car4Ptr;
+    car4Ptr = (directions *)malloc(sizeof(directions));
+    car4Ptr->carID = 3;
+    car4Ptr->arrTime = 3.5;
+    car4Ptr->dir_original = 'S';
+    car4Ptr->dir_target = 'S';
+ 
+    directions *car5Ptr;
+    car5Ptr = (directions *)malloc(sizeof(directions));
+    car5Ptr->carID = 4;
+    car5Ptr->arrTime = 4.2;
+    car5Ptr->dir_original = 'S';
+    car5Ptr->dir_target = 'E';
+ 
+    directions *car6Ptr;
+    car6Ptr = (directions *)malloc(sizeof(directions));
+    car6Ptr->carID = 5;
+    car6Ptr->arrTime = 4.4;
+    car6Ptr->dir_original = 'N';
+    car6Ptr->dir_target = 'N';
+ 
+    directions *car7Ptr;
+    car7Ptr = (directions *)malloc(sizeof(directions));
+    car7Ptr->carID = 6;
+    car7Ptr->arrTime = 5.7;
+    car7Ptr->dir_original = 'E';
+    car7Ptr->dir_target = 'N';
+ 
+    directions *car8Ptr;
+    car8Ptr = (directions *)malloc(sizeof(directions));
+    car8Ptr->carID = 7;
+    car8Ptr->arrTime = 5.9;
+    car8Ptr->dir_original = 'W';
+    car8Ptr->dir_target = 'N';
+ 
+ 
+    gettimeofday(&begin, 0);
     
     pthread_create(&thread1, NULL, Car, car1Ptr);
-    spin(1);
     pthread_create(&thread2, NULL, Car, car2Ptr);
-    spin(1);
     pthread_create(&thread3, NULL, Car, car3Ptr);
-
+    pthread_create(&thread4, NULL, Car, car4Ptr);
+    pthread_create(&thread5, NULL, Car, car5Ptr);
+    pthread_create(&thread6, NULL, Car, car6Ptr);
+    pthread_create(&thread7, NULL, Car, car7Ptr);
+    pthread_create(&thread8, NULL, Car, car8Ptr);
+ 
     // printf("after pthread_create\n");
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
-    
+    pthread_join(thread4, NULL);
+    pthread_join(thread5, NULL);
+    pthread_join(thread6, NULL);
+    pthread_join(thread7, NULL);
+    pthread_join(thread8, NULL);
+   
     printf("Done with main thread.\n");
     return 0;
 }
