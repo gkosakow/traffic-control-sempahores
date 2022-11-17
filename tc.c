@@ -10,8 +10,8 @@
 sem_t headLock;                                             // arrival at intersection
 sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;        // northwest mid, northeast mid, southeast mid, southwest mid
 sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};
-time_t start, now;
-struct timeval begin, end;
+clock_t start, end;
+float duration;
 
 typedef struct _directions{
 int carID;
@@ -20,9 +20,14 @@ char dir_original;
 char dir_target;
 } directions;
 
-void spin (unsigned int secs) {
-    unsigned int retTime = time(0) + secs;   // Get finishing time.
-    while (time(0) < retTime);               // Loop until it arrives.
+void spin (float secs) {   // Get finishing time.
+    clock_t spinStart, spinEnd;
+    float spinDuration;
+    spinStart = clock();
+    while (spinDuration < secs){
+        spinEnd = clock();
+        spinDuration = (float)(spinEnd - spinStart)/CLOCKS_PER_SEC;
+    }               // Loop until it arrives.
 }
 
 void *checkPath(void *d){
@@ -307,11 +312,9 @@ void *unblockCurrentPath(void *d){
 void ArriveIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    gettimeofday(&end, 0);
-    long seconds = end.tv_sec - begin.tv_sec;
-    long microseconds = end.tv_usec - begin.tv_usec;
-    double elapsed = seconds + microseconds*1e-6;
-    printf("Time: %.2fs\t", elapsed);
+    end = clock();
+    duration = (float)(end - start)/CLOCKS_PER_SEC;
+    printf("Time: %.1f\t", duration);
 
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
@@ -323,11 +326,9 @@ void ArriveIntersection(void* d){
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    gettimeofday(&end, 0);
-    long seconds = end.tv_sec - begin.tv_sec;
-    long microseconds = end.tv_usec - begin.tv_usec;
-    double elapsed = seconds + microseconds*1e-6;
-    printf("Time: %.2fs\t", elapsed);
+    end = clock();
+    duration = (float)(end - start)/CLOCKS_PER_SEC;
+    printf("Time: %.1f\t", duration);
 
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
@@ -339,11 +340,9 @@ void CrossIntersection(void* d){
 void ExitIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    gettimeofday(&end, 0);
-    long seconds = end.tv_sec - begin.tv_sec;
-    long microseconds = end.tv_usec - begin.tv_usec;
-    double elapsed = seconds + microseconds*1e-6;
-    printf("Time: %.2fs\t", elapsed);
+    end = clock();
+    duration = (float)(end - start)/CLOCKS_PER_SEC;
+    printf("Time: %.1f\t", duration);
 
     printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("  exiting\n");
@@ -353,7 +352,7 @@ void ExitIntersection(void* d){
 void * Car(void* d) {
     directions *carPtr = (directions *)d;
 
-    sleep(1.1);
+    spin(carPtr->arrTime);
 
     ArriveIntersection(d);
     sem_post(&headLock);
@@ -436,8 +435,7 @@ int main(void) {
     car8Ptr->dir_original = 'W';
     car8Ptr->dir_target = 'N';
  
- 
-    gettimeofday(&begin, 0);
+    start = clock();
     
     pthread_create(&thread1, NULL, Car, car1Ptr);
     pthread_create(&thread2, NULL, Car, car2Ptr);
