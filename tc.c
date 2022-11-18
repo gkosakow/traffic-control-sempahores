@@ -692,14 +692,6 @@ void ArriveIntersection(void* d){
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
 
-    if(turnType(carPtr->dir_original,carPtr->dir_target) == '>'){
-        spin(5);
-    } else if(turnType(carPtr->dir_original,carPtr->dir_target) == '^'){
-        spin(4);
-    } else if (turnType(carPtr->dir_original,carPtr->dir_target) == '<'){
-        spin(3);
-    }
-
     end = clock();
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
@@ -708,7 +700,15 @@ void CrossIntersection(void* d){
     printf(" crossing\n");
     unblockCurrentPath(d);
     blockPath(d);
-    spin(4); // x= left, right, straight
+    if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
+        spin(3);
+    }
+    if (turnType(carPtr->dir_original, carPtr->dir_target) == '^'){
+        spin(4);
+    }
+    if (turnType(carPtr->dir_original, carPtr->dir_target) == '<'){
+        spin(5);
+    }
 }
 
 void ExitIntersection(void* d){
