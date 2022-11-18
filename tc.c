@@ -522,7 +522,6 @@ void *unblockPath(void *d)
             if (num_WW == 0)
                 sem_post(&WW);
 
-            sem_post(&WS);
             num_WS--;
             if (num_WS == 0)
                 sem_post(&WS);
@@ -588,7 +587,6 @@ void *unblockPath(void *d)
             if (num_NN == 0)
                 sem_post(&NN);
 
-            sem_post(&NW);
             num_NW--;
             if (num_NW == 0)
                 sem_post(&NW);
@@ -685,8 +683,9 @@ void ArriveIntersection(void* d){
 
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
+    //printf("\nBefore headlock\n");
+    //printf("\nAfter headlock\n");
     spin(2);
-    sem_wait(&headLock);
     if(carPtr->dir_original == 'N'){
         sem_wait(&southStopline);
     }
@@ -699,20 +698,36 @@ void ArriveIntersection(void* d){
     if(carPtr->dir_original == 'W'){
         sem_wait(&eastStopline);
     }
-    checkPath(d);
+    printf("%d\n", carPtr->carID);
+    sem_wait(&headLock);
+    checkPath(d);   //sem wait yourself
+    //printf("\nEnd of arrive\n");
 }
 
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
-
+    //printf("\nStart of cross\n");
     end = clock();
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
     
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
-    unblockCurrentPath(d);
-    blockPath(d);
+    blockPath(d);   //block try-wait
+    unblockCurrentPath(d); // post my path
+    sem_post(&headLock);
+    if(carPtr->dir_original == 'N'){
+        sem_post(&southStopline);
+    }
+    if(carPtr->dir_original == 'E'){
+        sem_post(&westStopline);
+    }
+    if(carPtr->dir_original == 'S'){
+        sem_post(&northStopline);
+    }
+    if(carPtr->dir_original == 'W'){
+        sem_post(&eastStopline);
+    }
 
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
         spin(3);
@@ -743,19 +758,7 @@ void * Car(void* d) {
     spin(carPtr->arrTime);
 
     ArriveIntersection(d);
-    if(carPtr->dir_original == 'N'){
-        sem_post(&southStopline);
-    }
-    if(carPtr->dir_original == 'E'){
-        sem_post(&westStopline);
-    }
-    if(carPtr->dir_original == 'S'){
-        sem_post(&northStopline);
-    }
-    if(carPtr->dir_original == 'W'){
-        sem_post(&eastStopline);
-    }
-    sem_post(&headLock);
+    //sem_post(&headLock);
     CrossIntersection(d);
     ExitIntersection(d);
     return NULL;
@@ -767,6 +770,7 @@ int main(void) {
     sem_init(&northStopline, 0, 1);
     sem_init(&eastStopline, 0, 1);
     sem_init(&westStopline, 0, 1);
+    sem_init(&southStopline, 0, 1);
     
     // initialize semaphore, only to be used with threads in this process, set value to 1
     for(int i = 0; i < 12; i++){
