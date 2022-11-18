@@ -32,6 +32,7 @@ void spin(float secs) {   // Get finishing time.
     }               // Loop until it arrives.
 }
 
+// Greg verified for correctness
 char turnType(char origin, char final){
     char direction;
     if (origin == 'N' && final == 'E'){
@@ -73,6 +74,7 @@ char turnType(char origin, char final){
     return direction;
 }
 
+// Greg verified for correctness
 void *checkPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -137,14 +139,11 @@ void *checkPath(void *d)
             sem_wait(&WS);
         }
     }
-    // now = time(NULL);
-    // printf("Time: %lds\t", (now - start));
-    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    // printf("\t\t\t\t\tUnblocked current path\n");    //DEBUGGER
 
     return (void *)NULL;
 }
 
+// Greg verified for correctness
 void *blockPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -330,6 +329,7 @@ void *blockPath(void *d)
     return (void *)NULL;
 }
 
+// Greg verified for correctness
 void *unblockPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -440,7 +440,7 @@ void *unblockPath(void *d)
         {
             num_NN--;
             if (num_NN == 0)
-                sem_post(&WS);
+                sem_post(&NN);
 
             num_NW--;
             if (num_NW == 0)
@@ -561,15 +561,15 @@ void *unblockPath(void *d)
             if (num_EN == 0)
                 sem_post(&EN);
 
-            num_EN--;
-            if (num_EN == 0)
-                sem_post(&EN);
+            num_NN--;
+            if (num_NN == 0)
+                sem_post(&NN);
         }
         else if (carPtr->dir_target == 'S')
         {
             num_SS--;
             if (num_SS == 0)
-                sem_post(&WS);
+                sem_post(&SS);
 
             num_SE--;
             if (num_SE == 0)
@@ -601,6 +601,7 @@ void *unblockPath(void *d)
     return (void *)NULL;
 }
 
+// Greg verified for correctness
 void *unblockCurrentPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -683,8 +684,6 @@ void ArriveIntersection(void* d){
 
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
-    //printf("\nBefore headlock\n");
-    //printf("\nAfter headlock\n");
     spin(2);
     if(carPtr->dir_original == 'N'){
         sem_wait(&southStopline);
@@ -698,10 +697,9 @@ void ArriveIntersection(void* d){
     if(carPtr->dir_original == 'W'){
         sem_wait(&eastStopline);
     }
-    printf("%d\n", carPtr->carID);
+
     sem_wait(&headLock);
     checkPath(d);   //sem wait yourself
-    //printf("\nEnd of arrive\n");
 }
 
 void CrossIntersection(void* d){
@@ -758,7 +756,6 @@ void * Car(void* d) {
     spin(carPtr->arrTime);
 
     ArriveIntersection(d);
-    //sem_post(&headLock);
     CrossIntersection(d);
     ExitIntersection(d);
     return NULL;
