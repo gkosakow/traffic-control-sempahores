@@ -7,14 +7,15 @@
 #include <time.h>
 #include <sys/time.h>
 
-sem_t headLock;                                             // arrival at intersection
-sem_t northStopline, eastStopline, southStopline, westStopline;
-sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;        // northwest mid, northeast mid, southeast mid, southwest mid
-sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};
-int num_NE, num_NN, num_NW, num_WN, num_WW, num_WS, num_SW, num_SS, num_SE, num_ES, num_EE, num_EN; // tracker for how many blocked (for each direction)
-clock_t start, end;
-float duration;
+sem_t headLock;                                                                                         // allows tracking of who arrived and goes first.
+sem_t northStopline, eastStopline, southStopline, westStopline;                                         // ceclaring semaphores to simulate lines at the stop signs.
+sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;                                                   // declaring semaphores for all possible car paths.
+sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};                      // creating an array to make sem_init easier.
+int num_NE, num_NN, num_NW, num_WN, num_WW, num_WS, num_SW, num_SS, num_SE, num_ES, num_EE, num_EN;     // tracker for how many blocked (for each direction)
+clock_t start, end;                                                                                     // start and end time to find time durations.
+float duration;                                                                                         // duration between start and end times.
 
+// declaring struct that stores car direction, ID, and arrival time.
 typedef struct _directions{
 int carID;
 double arrTime;
@@ -22,17 +23,18 @@ char dir_original;
 char dir_target;
 } directions;
 
-void spin(float secs) {   // Get finishing time.
+// spin function that spins for a given amount of time to simulate stopping at the stop sign or crossing through the intersection
+void spin(float secs) {
     clock_t spinStart, spinEnd;
     float spinDuration;
     spinStart = clock();
     while (spinDuration < secs){
         spinEnd = clock();
         spinDuration = (float)(spinEnd - spinStart)/CLOCKS_PER_SEC;
-    }               // Loop until it arrives.
+    }
 }
 
-// Greg verified for correctness
+// turnType finds what type of turn R, L, S, given an initial and final direction.
 char turnType(char origin, char final){
     char direction;
     if (origin == 'N' && final == 'E'){
@@ -74,7 +76,7 @@ char turnType(char origin, char final){
     return direction;
 }
 
-// Greg verified for correctness
+// checkPath performs a sem_wait for the path that the car would like to take.
 void *checkPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -143,7 +145,7 @@ void *checkPath(void *d)
     return (void *)NULL;
 }
 
-// Greg verified for correctness
+// blockPath blocks all other paths that other cars could take that would result in a collision.
 void *blockPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -324,7 +326,7 @@ void *blockPath(void *d)
     return (void *)NULL;
 }
 
-// Greg verified for correctness
+// unblockPath performs a sem_post for all the other paths that would result in a collision.
 void *unblockPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -505,7 +507,7 @@ void *unblockPath(void *d)
             num_EN--;
             if (num_EN == 0)
                 sem_post(&EN);
-                
+
             num_NE--;
             if (num_NE == 0)
                 sem_post(&NE);
@@ -592,7 +594,7 @@ void *unblockPath(void *d)
     return (void *)NULL;
 }
 
-// Greg verified for correctness
+// unblockCurrentPath sem_posts the car's actual path.
 void *unblockCurrentPath(void *d)
 {
     directions *carPtr = (directions *)d;
@@ -666,6 +668,7 @@ void *unblockCurrentPath(void *d)
     return (void *)NULL;
 }
 
+// ArriveIntersection simulates a car arriving at the intersection.
 void ArriveIntersection(void* d){
     directions *carPtr = (directions *)d;
 
@@ -675,7 +678,11 @@ void ArriveIntersection(void* d){
 
     printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
+
+    // simulates taking two seconds to stop at the intersection.
     spin(2);
+
+    // if block that performs a sem_wait for the stop signs for all four directions.
     if(carPtr->dir_original == 'N'){
         sem_wait(&southStopline);
     }
@@ -689,21 +696,31 @@ void ArriveIntersection(void* d){
         sem_wait(&eastStopline);
     }
 
+    // performs a wait on the headLock (tracks car arrival order to be executed)
     sem_wait(&headLock);
-    checkPath(d);   //sem wait your own path
+
+    // sem_wait on the desired car path.
+    checkPath(d);
 }
 
+// CrossIntersection simulates a car crossing the intersection.
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
-    //printf("\nStart of cross\n");
+    
     end = clock();
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
     
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
-    blockPath(d);   //block try-wait
-    unblockCurrentPath(d); // post my path
+
+    // sem_waits and blocks all other paths that will collide with this path.
+    blockPath(d);
+
+    // sem_posts to this car's path as it is driving through the intersection.
+    unblockCurrentPath(d);
+
+    // if block that performs a sem_post for the stop signs for all four directions.
     sem_post(&headLock);
     if(carPtr->dir_original == 'N'){
         sem_post(&southStopline);
@@ -718,6 +735,7 @@ void CrossIntersection(void* d){
         sem_post(&eastStopline);
     }
 
+    // simulates the time to go left, right, or straight.
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '<'){
         spin(5);
     }
@@ -729,6 +747,7 @@ void CrossIntersection(void* d){
     }
 }
 
+// ExitIntersection simulates a car leaving the intersection.
 void ExitIntersection(void* d){
     directions *carPtr = (directions *)d;
 
@@ -738,17 +757,22 @@ void ExitIntersection(void* d){
 
     printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("  exiting\n");
+
+    // sem_posting to unblock all paths that would've caused a collision.
     unblockPath(d);
 }
 
+// simulates the car's full course of action.
 void * Car(void* d) {
     directions *carPtr = (directions *)d;
 
+    // spinning to simulate car arrival time.
     spin(carPtr->arrTime);
 
     ArriveIntersection(d);
     CrossIntersection(d);
     ExitIntersection(d);
+
     return NULL;
 }
 
@@ -830,7 +854,7 @@ int main(void) {
     car8Ptr->dir_original = 'W';
     car8Ptr->dir_target = 'N';
  
-    start = clock();
+    start = clock();                // starting clock to find time durations.
     
     pthread_create(&thread1, NULL, Car, car1Ptr);
     pthread_create(&thread2, NULL, Car, car2Ptr);
@@ -851,6 +875,6 @@ int main(void) {
     pthread_join(thread7, NULL);
     pthread_join(thread8, NULL);
    
-    printf("Done with main thread.\n");
+    printf("\nAll cars are through.\n");
     return 0;
 }

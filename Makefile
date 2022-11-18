@@ -1,13 +1,10 @@
 # Builds the tc program
 
-all: tc jonathan
+all: tc
 
 clean:
-	rm -f tc jonathan
+	rm -f tc
 	
 # builds traffic prog
 tc: tc.c
 	gcc tc.c -o tc -lpthread -ldl
-
-jonathan: jonathan.c
-	gcc jonathan.c -o jonathan -lpthread
