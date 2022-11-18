@@ -8,6 +8,7 @@
 #include <sys/time.h>
 
 sem_t headLock;                                             // arrival at intersection
+sem_t northStopline, eastStopline, southStopline, westStopline;
 sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;        // northwest mid, northeast mid, southeast mid, southwest mid
 sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};
 int num_NE, num_NN, num_NW, num_WN, num_WW, num_WS, num_SW, num_SS, num_SE, num_ES, num_EE, num_EN; // tracker for how many blocked (for each direction)
@@ -686,6 +687,18 @@ void ArriveIntersection(void* d){
     printf("arriving\n");
     spin(2);
     sem_wait(&headLock);
+    if(carPtr->dir_original == 'N'){
+        sem_wait(&southStopline);
+    }
+    if(carPtr->dir_original == 'E'){
+        sem_wait(&westStopline);
+    }
+    if(carPtr->dir_original == 'S'){
+        sem_wait(&northStopline);
+    }
+    if(carPtr->dir_original == 'W'){
+        sem_wait(&eastStopline);
+    }
     checkPath(d);
 }
 
@@ -695,11 +708,12 @@ void CrossIntersection(void* d){
     end = clock();
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
-
+    
     printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
     unblockCurrentPath(d);
     blockPath(d);
+
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
         spin(3);
     }
@@ -729,6 +743,18 @@ void * Car(void* d) {
     spin(carPtr->arrTime);
 
     ArriveIntersection(d);
+    if(carPtr->dir_original == 'N'){
+        sem_post(&southStopline);
+    }
+    if(carPtr->dir_original == 'E'){
+        sem_post(&westStopline);
+    }
+    if(carPtr->dir_original == 'S'){
+        sem_post(&northStopline);
+    }
+    if(carPtr->dir_original == 'W'){
+        sem_post(&eastStopline);
+    }
     sem_post(&headLock);
     CrossIntersection(d);
     ExitIntersection(d);
@@ -738,6 +764,9 @@ void * Car(void* d) {
 int main(void) {
     
     sem_init(&headLock, 0, 1);
+    sem_init(&northStopline, 0, 1);
+    sem_init(&eastStopline, 0, 1);
+    sem_init(&westStopline, 0, 1);
     
     // initialize semaphore, only to be used with threads in this process, set value to 1
     for(int i = 0; i < 12; i++){
