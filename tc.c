@@ -505,6 +505,7 @@ void *unblockPath(void *d)
             num_EN--;
             if (num_EN == 0)
                 sem_post(&EN);
+                
             num_NE--;
             if (num_NE == 0)
                 sem_post(&NE);

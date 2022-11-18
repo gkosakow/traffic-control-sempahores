@@ -42,7 +42,7 @@ int ArriveIntersection(struct directions *dir) {
     if (dir->dir_original == 'N')
     {
         sem_wait(&N);
-        printf("Car %d\n", dir->car_id);
+        //printf("Car %d\n", dir->car_id);
         sem_wait(&line);
         if (dir->dir_target == 'N')
         {
@@ -103,7 +103,7 @@ int ArriveIntersection(struct directions *dir) {
     else if (dir->dir_original == 'W')
     {
         sem_wait(&W);
-        printf("Car %d\n", dir->car_id);
+        //printf("Car %d\n", dir->car_id);
         sem_wait(&line);
         if (dir->dir_target == 'W')
         {
@@ -164,7 +164,7 @@ int ArriveIntersection(struct directions *dir) {
     else if (dir->dir_original == 'E')
     {
         sem_wait(&E);
-        printf("Car %d\n", dir->car_id);
+        //printf("Car %d\n", dir->car_id);
         sem_wait(&line);
         if (dir->dir_target == 'E')
         {
@@ -225,7 +225,7 @@ int ArriveIntersection(struct directions *dir) {
     else if (dir->dir_original == 'S')
     {
         sem_wait(&S);
-        printf("Car %d\n", dir->car_id);
+        //printf("Car %d\n", dir->car_id);
         sem_wait(&line);
         if (dir->dir_target == 'S')
         {
@@ -391,9 +391,6 @@ void ExitIntersection(struct directions *dir) {
                 sem_post(&EE);
             }
             
-            
-            
-
             //sem_post(&NE);
         }
     }
@@ -404,13 +401,30 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&WW);
             //time = 4;
 
-            sem_post(&NN);
-            sem_post(&SS);
-            sem_post(&SW);
-            sem_post(&SE);
-            sem_post(&EN);
-            sem_post(&NW);
+            nSW--;
+            nSS--;
+            nSE--;
+            nEN--;
+            nNN--;
+            nNW--;
 
+            if (nSW == 0)
+                sem_post(&SW);
+
+            if (nSS == 0)
+                sem_post(&SS);
+
+            if (nSE == 0)
+                sem_post(&SE);
+
+            if (nEN == 0)
+                sem_post(&EN);
+
+            if (nNN == 0)
+                sem_post(&NN);
+
+            if (nNW == 0)
+                sem_post(&NW);
             //sem_post(&WW);
         }
         else if (dir->dir_target == 'N')
@@ -418,9 +432,13 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&WN);
             //time = 3;
 
-            sem_post(&EN);
-            sem_post(&NN);
+            nEN--;
+            nNN--;
+            if (nEN == 0)
+                sem_post(&EN);
 
+            if (nNN == 0)
+                sem_post(&NN);
             //sem_post(&WN);
         }
         else if (dir->dir_target == 'S')
@@ -428,12 +446,29 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&WS);
             //time = 5;
 
-            sem_post(&NN);
-            sem_post(&SS);
-            sem_post(&EE);
-            sem_post(&NW);
-            sem_post(&ES);
-            sem_post(&SE);
+            nSS--;
+            nSE--;
+            nES--;
+            nEE--;
+            nNN--;
+            nNW--;
+            if (nSS == 0)
+                sem_post(&SS);
+
+            if (nSE == 0)
+                sem_post(&SE);
+
+            if (nES == 0)
+                sem_post(&ES);
+
+            if (nEE == 0)
+                sem_post(&EE);
+
+            if (nNN == 0)
+                sem_post(&NN);
+
+            if (nNW == 0)
+                sem_post(&NW);
 
             //sem_post(&WS);
         }
@@ -445,12 +480,29 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&EE);
             //time = 4;
 
-            sem_post(&NN);
-            sem_post(&SS);
-            sem_post(&NE);
-            sem_post(&NW);
-            sem_post(&WS);
-            sem_post(&SE);
+            nNE--;
+            nNN--;
+            nNW--;
+            nWS--;
+            nSS--;
+            nSE--;
+            if (nNE == 0)
+                sem_post(&NE);
+
+            if (nNN == 0)
+                sem_post(&NN);
+
+            if (nNW == 0)
+                sem_post(&NW);
+
+            if (nWS == 0)
+                sem_post(&WS);
+
+            if (nSS == 0)
+                sem_post(&SS);
+
+            if (nSE == 0)
+                sem_post(&SE);
 
             //sem_post(&EE);
         }
@@ -459,12 +511,29 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&EN);
             //time = 5;
 
-            sem_post(&NN);
-            sem_post(&SS);
-            sem_post(&WW);
-            sem_post(&NW);
-            sem_post(&WS);
-            sem_post(&SE);
+            nNN--;
+            nNW--;
+            nWN--;
+            nWW--;
+            nSS--;
+            nSE--;
+            if (nNN == 0)
+                sem_post(&NN);
+
+            if (nNW == 0)
+                sem_post(&NW);
+
+            if (nWN == 0)
+                sem_post(&WN);
+
+            if (nWW == 0)
+                sem_post(&WW);
+
+            if (nSS == 0)
+                sem_post(&SS);
+
+            if (nSE == 0)
+                sem_post(&SE);
 
             //sem_post(&EN);
         }
@@ -473,8 +542,13 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&ES);
             //time = 3;
 
-            sem_post(&WS);
-            sem_post(&SS);
+            nWS--;
+            nSS--;
+            if (nWS == 0)
+                sem_post(&WS);
+
+            if (nSS == 0)
+                sem_post(&SS);
 
             //sem_post(&ES);
         }
@@ -525,12 +599,29 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&SE);
             //time = 5;
 
-            sem_post(&EE);
-            sem_post(&WW);
-            sem_post(&NN);
-            sem_post(&WS);
-            sem_post(&NE);
-            sem_post(&EN);
+            nEE--;
+            nEN--;
+            nNE--;
+            nNN--;
+            nWW--;
+            nWS--;
+            if (nEE == 0)
+                sem_post(&EE);
+
+            if (nEN == 0)
+                sem_post(&EN);
+
+            if (nNE == 0)
+                sem_post(&NE);
+
+            if (nNN == 0)
+                sem_post(&NN);
+
+            if (nWW == 0)
+                sem_post(&WW);
+
+            if (nWS == 0)
+                sem_post(&WS);
 
             //sem_post(&SE);
         }
@@ -539,8 +630,13 @@ void ExitIntersection(struct directions *dir) {
             //sem_wait(&SW);
             //time = 3;
 
-            sem_post(&NW);
-            sem_post(&WW);
+            nNW--;
+            nWW--;
+            if (nNW == 0)
+                sem_post(&NW);
+
+            if (nWW == 0)
+                sem_post(&WW);
 
             //sem_post(&SW);
         }
