@@ -8,7 +8,6 @@
 #include <sys/time.h>
 
 sem_t headLock;                                                                                         // allows tracking of who arrived and goes first.
-sem_t northStopline, eastStopline, southStopline, westStopline;                                         // ceclaring semaphores to simulate lines at the stop signs.
 sem_t NE, NN, NW, WN, WW, WS, SW, SS, SE, ES, EE, EN;                                                   // declaring semaphores for all possible car paths.
 sem_t *SEM_ARRAY[] = {&NE, &NN, &NW, &WN, &WW, &WS, &SW, &SS, &SE, &ES, &EE, &EN};                      // creating an array to make sem_init easier.
 int num_NE, num_NN, num_NW, num_WN, num_WW, num_WS, num_SW, num_SS, num_SE, num_ES, num_EE, num_EN;     // tracker for how many blocked (for each direction)
@@ -676,25 +675,11 @@ void ArriveIntersection(void* d){
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
 
-    printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (->%c , ->%c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("arriving\n");
 
     // simulates taking two seconds to stop at the intersection.
-    spin(2);
-
-    // if block that performs a sem_wait for the stop signs for all four directions.
-    if(carPtr->dir_original == 'N'){
-        sem_wait(&southStopline);
-    }
-    if(carPtr->dir_original == 'E'){
-        sem_wait(&westStopline);
-    }
-    if(carPtr->dir_original == 'S'){
-        sem_wait(&northStopline);
-    }
-    if(carPtr->dir_original == 'W'){
-        sem_wait(&eastStopline);
-    }
+    // spin(2);
 
     // performs a wait on the headLock (tracks car arrival order to be executed)
     sem_wait(&headLock);
@@ -711,7 +696,7 @@ void CrossIntersection(void* d){
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
     
-    printf("Car %d (%c , %c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (->%c , ->%c)\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf(" crossing\n");
 
     // sem_waits and blocks all other paths that will collide with this path.
@@ -722,28 +707,16 @@ void CrossIntersection(void* d){
 
     // if block that performs a sem_post for the stop signs for all four directions.
     sem_post(&headLock);
-    if(carPtr->dir_original == 'N'){
-        sem_post(&southStopline);
-    }
-    if(carPtr->dir_original == 'E'){
-        sem_post(&westStopline);
-    }
-    if(carPtr->dir_original == 'S'){
-        sem_post(&northStopline);
-    }
-    if(carPtr->dir_original == 'W'){
-        sem_post(&eastStopline);
-    }
 
     // simulates the time to go left, right, or straight.
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '<'){
-        spin(5);
+        spin(3);
     }
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '^'){
-        spin(4);
+        spin(2);
     }
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
-        spin(3);
+        spin(1);
     }
 }
 
@@ -755,7 +728,7 @@ void ExitIntersection(void* d){
     duration = (float)(end - start)/CLOCKS_PER_SEC;
     printf("Time: %.1f\t", duration);
 
-    printf("Car %d (%c , %c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
+    printf("Car %d (->%c , ->%c)\t\t\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
     printf("  exiting\n");
 
     // sem_posting to unblock all paths that would've caused a collision.
@@ -779,10 +752,6 @@ void * Car(void* d) {
 int main(void) {
     
     sem_init(&headLock, 0, 1);
-    sem_init(&northStopline, 0, 1);
-    sem_init(&eastStopline, 0, 1);
-    sem_init(&westStopline, 0, 1);
-    sem_init(&southStopline, 0, 1);
     
     // initialize semaphore, only to be used with threads in this process, set value to 1
     for(int i = 0; i < 12; i++){
@@ -800,57 +769,57 @@ int main(void) {
  
     directions *car1Ptr;
     car1Ptr = (directions *)malloc(sizeof(directions));
-    car1Ptr->carID = 1;
+    car1Ptr->carID = 0;
     car1Ptr->arrTime = 1.1;
     car1Ptr->dir_original = 'N';
     car1Ptr->dir_target = 'N';
  
     directions *car2Ptr;
     car2Ptr = (directions *)malloc(sizeof(directions));
-    car2Ptr->carID = 2;
-    car2Ptr->arrTime = 2.2;
+    car2Ptr->carID = 1;
+    car2Ptr->arrTime = 2.0;
     car2Ptr->dir_original = 'N';
     car2Ptr->dir_target = 'N';
  
     directions *car3Ptr;
     car3Ptr = (directions *)malloc(sizeof(directions));
-    car3Ptr->carID = 3;
+    car3Ptr->carID = 2;
     car3Ptr->arrTime = 3.3;
     car3Ptr->dir_original = 'N';
     car3Ptr->dir_target = 'W';
  
     directions *car4Ptr;
     car4Ptr = (directions *)malloc(sizeof(directions));
-    car4Ptr->carID = 4;
-    car4Ptr->arrTime = 4.4;
+    car4Ptr->carID = 3;
+    car4Ptr->arrTime = 3.5;
     car4Ptr->dir_original = 'S';
     car4Ptr->dir_target = 'S';
  
     directions *car5Ptr;
     car5Ptr = (directions *)malloc(sizeof(directions));
-    car5Ptr->carID = 5;
-    car5Ptr->arrTime = 5.5;
+    car5Ptr->carID = 4;
+    car5Ptr->arrTime = 4.2;
     car5Ptr->dir_original = 'S';
     car5Ptr->dir_target = 'E';
  
     directions *car6Ptr;
     car6Ptr = (directions *)malloc(sizeof(directions));
-    car6Ptr->carID = 6;
-    car6Ptr->arrTime = 6.6;
+    car6Ptr->carID = 5;
+    car6Ptr->arrTime = 4.4;
     car6Ptr->dir_original = 'N';
     car6Ptr->dir_target = 'N';
  
     directions *car7Ptr;
     car7Ptr = (directions *)malloc(sizeof(directions));
-    car7Ptr->carID = 7;
-    car7Ptr->arrTime = 7.7;
+    car7Ptr->carID = 6;
+    car7Ptr->arrTime = 5.7;
     car7Ptr->dir_original = 'E';
     car7Ptr->dir_target = 'N';
  
     directions *car8Ptr;
     car8Ptr = (directions *)malloc(sizeof(directions));
-    car8Ptr->carID = 8;
-    car8Ptr->arrTime = 8.8;
+    car8Ptr->carID = 7;
+    car8Ptr->arrTime = 5.9;
     car8Ptr->dir_original = 'W';
     car8Ptr->dir_target = 'N';
  
