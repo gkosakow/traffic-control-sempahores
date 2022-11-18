@@ -21,7 +21,7 @@ char dir_original;
 char dir_target;
 } directions;
 
-void spin (float secs) {   // Get finishing time.
+void spin(float secs) {   // Get finishing time.
     clock_t spinStart, spinEnd;
     float spinDuration;
     spinStart = clock();
@@ -29,6 +29,47 @@ void spin (float secs) {   // Get finishing time.
         spinEnd = clock();
         spinDuration = (float)(spinEnd - spinStart)/CLOCKS_PER_SEC;
     }               // Loop until it arrives.
+}
+
+char turnType(char origin, char final){
+    char direction;
+    if (origin == 'N' && final == 'E'){
+        direction = '>';
+    }
+    if (origin == 'N' && final == 'N'){
+        direction = '^';
+    }
+    if (origin == 'N' && final == 'W'){
+        direction = '<';
+    }
+    if (origin == 'E' && final == 'S'){
+        direction = '>';
+    }
+    if (origin == 'E' && final == 'E'){
+        direction = '^';
+    }
+    if (origin == 'E' && final == 'N'){
+        direction = '<';
+    }
+    if (origin == 'S' && final == 'W'){
+        direction = '>';
+    }
+    if (origin == 'S' && final == 'S'){
+        direction = '^';
+    }
+    if (origin == 'S' && final == 'E'){
+        direction = '<';
+    }
+    if (origin == 'W' && final == 'N'){
+        direction = '>';
+    }
+    if (origin == 'W' && final == 'W'){
+        direction = '^';
+    }
+    if (origin == 'W' && final == 'S'){
+        direction = '<';
+    }
+    return direction;
 }
 
 void *checkPath(void *d)
@@ -650,6 +691,14 @@ void ArriveIntersection(void* d){
 
 void CrossIntersection(void* d){
     directions *carPtr = (directions *)d;
+
+    if(turnType(carPtr->dir_original,carPtr->dir_target) == '>'){
+        spin(5);
+    } else if(turnType(carPtr->dir_original,carPtr->dir_target) == '^'){
+        spin(4);
+    } else if (turnType(carPtr->dir_original,carPtr->dir_target) == '<'){
+        spin(3);
+    }
 
     end = clock();
     duration = (float)(end - start)/CLOCKS_PER_SEC;
