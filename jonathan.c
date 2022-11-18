@@ -102,7 +102,7 @@ int ArriveIntersection(struct directions *dir) {
     }
     else if (dir->dir_original == 'W')
     {
-        sem_post(&W);
+        sem_wait(&W);
         printf("Car %d\n", dir->car_id);
         sem_wait(&line);
         if (dir->dir_target == 'W')
@@ -199,8 +199,8 @@ int ArriveIntersection(struct directions *dir) {
             nWW++;
             sem_trywait(&NW);
             nNW++;
-            sem_trywait(&WS);
-            nWS++;
+            sem_trywait(&WN);
+            nWN++;
             sem_trywait(&SE);
             nSE++;
 

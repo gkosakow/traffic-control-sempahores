@@ -321,11 +321,6 @@ void *blockPath(void *d)
         }
     }
 
-    // now = time(NULL);
-    // printf("Time: %lds\t", (now - start));
-    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    // printf("\t\t\t\t\tBlocked path\n");    //DEBUGGER
-
     return (void *)NULL;
 }
 
@@ -383,7 +378,7 @@ void *unblockPath(void *d)
 
             num_SW--;
             if (num_SW == 0)
-                sem_post(&SE);
+                sem_post(&SW);
 
             num_SS--;
             if (num_SS == 0)
@@ -593,11 +588,6 @@ void *unblockPath(void *d)
         }
     }
 
-    // now = time(NULL);
-    // printf("Time: %lds\t", (now - start));
-    // printf("Car %d (%c , %c)\t", carPtr->carID, carPtr->dir_original, carPtr->dir_target);   //DEBUGGER
-    // printf("\t\t\t\t\tUnblocked path\n");    //DEBUGGER
-
     return (void *)NULL;
 }
 
@@ -699,7 +689,7 @@ void ArriveIntersection(void* d){
     }
 
     sem_wait(&headLock);
-    checkPath(d);   //sem wait yourself
+    checkPath(d);   //sem wait your own path
 }
 
 void CrossIntersection(void* d){
@@ -727,14 +717,14 @@ void CrossIntersection(void* d){
         sem_post(&eastStopline);
     }
 
-    if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
-        spin(3);
+    if (turnType(carPtr->dir_original, carPtr->dir_target) == '<'){
+        spin(5);
     }
     if (turnType(carPtr->dir_original, carPtr->dir_target) == '^'){
         spin(4);
     }
-    if (turnType(carPtr->dir_original, carPtr->dir_target) == '<'){
-        spin(5);
+    if (turnType(carPtr->dir_original, carPtr->dir_target) == '>'){
+        spin(3);
     }
 }
 
